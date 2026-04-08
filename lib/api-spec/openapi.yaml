@@ -20,6 +20,8 @@ tags:
     description: Photo upload and verification
   - name: billing
     description: Billing and invoicing
+  - name: clients
+    description: Client company management
   - name: dashboard
     description: Dashboard summaries
 paths:
@@ -28,7 +30,6 @@ paths:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -41,7 +42,6 @@ paths:
     get:
       operationId: listTrucks
       tags: [trucks]
-      summary: List all trucks
       responses:
         "200":
           description: List of trucks
@@ -54,7 +54,6 @@ paths:
     post:
       operationId: createTruck
       tags: [trucks]
-      summary: Create a new truck
       requestBody:
         required: true
         content:
@@ -73,7 +72,6 @@ paths:
     get:
       operationId: getTruck
       tags: [trucks]
-      summary: Get a truck by ID
       parameters:
         - name: id
           in: path
@@ -96,7 +94,6 @@ paths:
     patch:
       operationId: updateTruck
       tags: [trucks]
-      summary: Update a truck
       parameters:
         - name: id
           in: path
@@ -121,7 +118,6 @@ paths:
     get:
       operationId: listDrivers
       tags: [drivers]
-      summary: List all drivers
       responses:
         "200":
           description: List of drivers
@@ -134,7 +130,6 @@ paths:
     post:
       operationId: createDriver
       tags: [drivers]
-      summary: Create a new driver
       requestBody:
         required: true
         content:
@@ -153,7 +148,6 @@ paths:
     get:
       operationId: getDriver
       tags: [drivers]
-      summary: Get a driver by ID
       parameters:
         - name: id
           in: path
@@ -178,7 +172,6 @@ paths:
     get:
       operationId: listTrips
       tags: [trips]
-      summary: List all trips
       parameters:
         - name: status
           in: query
@@ -207,7 +200,6 @@ paths:
     post:
       operationId: createTrip
       tags: [trips]
-      summary: Create a new trip
       requestBody:
         required: true
         content:
@@ -226,7 +218,6 @@ paths:
     get:
       operationId: getTrip
       tags: [trips]
-      summary: Get a trip by ID
       parameters:
         - name: id
           in: path
@@ -249,7 +240,6 @@ paths:
     patch:
       operationId: updateTrip
       tags: [trips]
-      summary: Update a trip
       parameters:
         - name: id
           in: path
@@ -274,7 +264,6 @@ paths:
     get:
       operationId: listTripPhotos
       tags: [photos]
-      summary: List photos for a trip
       parameters:
         - name: id
           in: path
@@ -293,7 +282,6 @@ paths:
     post:
       operationId: uploadTripPhoto
       tags: [photos]
-      summary: Upload a photo for a trip
       parameters:
         - name: id
           in: path
@@ -318,7 +306,6 @@ paths:
     post:
       operationId: requestPhotoOtp
       tags: [photos]
-      summary: Request OTP to authenticate a sealed photo
       parameters:
         - name: photoId
           in: path
@@ -337,7 +324,6 @@ paths:
     post:
       operationId: verifyPhotoOtp
       tags: [photos]
-      summary: Verify OTP and authenticate a sealed photo
       parameters:
         - name: photoId
           in: path
@@ -364,11 +350,104 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List all clients
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "201":
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClientBody"
+      responses:
+        "200":
+          description: Client updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /billing:
     get:
       operationId: listBills
       tags: [billing]
-      summary: List all bills
       parameters:
         - name: tripId
           in: query
@@ -380,6 +459,11 @@ paths:
           required: false
           schema:
             type: string
+        - name: clientId
+          in: query
+          required: false
+          schema:
+            type: integer
       responses:
         "200":
           description: List of bills
@@ -392,7 +476,6 @@ paths:
     post:
       operationId: createBill
       tags: [billing]
-      summary: Create a bill for a trip
       requestBody:
         required: true
         content:
@@ -411,7 +494,6 @@ paths:
     get:
       operationId: getBill
       tags: [billing]
-      summary: Get a bill by ID
       parameters:
         - name: id
           in: path
@@ -428,7 +510,6 @@ paths:
     patch:
       operationId: updateBill
       tags: [billing]
-      summary: Update a bill
       parameters:
         - name: id
           in: path
@@ -449,11 +530,66 @@ paths:
               schema:
                 $ref: "#/components/schemas/Bill"
 
+  /billing/{id}/payment:
+    post:
+      operationId: recordPayment
+      tags: [billing]
+      summary: Record a payment against a bill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordPaymentBody"
+      responses:
+        "200":
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bill"
+
+  /billing/export/csv:
+    get:
+      operationId: exportBillsCsv
+      tags: [billing]
+      responses:
+        "200":
+          description: Bills CSV export data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillsExport"
+
+  /billing/{id}/invoice-data:
+    get:
+      operationId: getInvoiceData
+      tags: [billing]
+      summary: Get full invoice data for PDF generation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Invoice data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceData"
+
   /dashboard/summary:
     get:
       operationId: getDashboardSummary
       tags: [dashboard]
-      summary: Get dashboard summary stats
       responses:
         "200":
           description: Dashboard summary
@@ -466,7 +602,6 @@ paths:
     get:
       operationId: getRecentTrips
       tags: [dashboard]
-      summary: Get recent trips for dashboard
       responses:
         "200":
           description: Recent trips
@@ -481,7 +616,6 @@ paths:
     get:
       operationId: getPendingPhotos
       tags: [dashboard]
-      summary: Get photos pending OTP authentication
       responses:
         "200":
           description: Pending photos
@@ -492,18 +626,43 @@ paths:
                 items:
                   $ref: "#/components/schemas/TripPhoto"
 
-  /billing/export/csv:
+  /auth/me:
     get:
-      operationId: exportBillsCsv
-      tags: [billing]
-      summary: Export bills as CSV data
+      operationId: getMe
+      tags: [health]
+      summary: Get current user info and role
       responses:
         "200":
-          description: Bills CSV data as array of rows
+          description: Current user
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BillsExport"
+                $ref: "#/components/schemas/UserInfo"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/set-role:
+    post:
+      operationId: setUserRole
+      tags: [health]
+      summary: Set a user role (owner only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRoleBody"
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
 
 components:
   schemas:
@@ -523,6 +682,40 @@ components:
       required:
         - error
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    UserInfo:
+      type: object
+      properties:
+        userId:
+          type: string
+        role:
+          type: string
+        email:
+          type: ["string", "null"]
+      required:
+        - userId
+        - role
+
+    SetRoleBody:
+      type: object
+      properties:
+        targetUserId:
+          type: string
+        role:
+          type: string
+      required:
+        - targetUserId
+        - role
+
     Truck:
       type: object
       properties:
@@ -536,7 +729,6 @@ components:
           type: number
         status:
           type: string
-          description: "active | maintenance | inactive"
         driverId:
           type: ["integer", "null"]
         createdAt:
@@ -598,7 +790,6 @@ components:
           type: string
         status:
           type: string
-          description: "active | inactive"
         createdAt:
           type: string
         updatedAt:
@@ -637,6 +828,8 @@ components:
           type: integer
         driverId:
           type: integer
+        clientId:
+          type: ["integer", "null"]
         origin:
           type: string
         destination:
@@ -647,7 +840,6 @@ components:
           type: string
         status:
           type: string
-          description: "scheduled | in_transit | loaded | delivered | completed"
         startDate:
           type: ["string", "null"]
         endDate:
@@ -662,6 +854,7 @@ components:
         - id
         - truckId
         - driverId
+        - clientId
         - origin
         - destination
         - clientCompany
@@ -679,6 +872,8 @@ components:
         truckId:
           type: integer
         driverId:
+          type: integer
+        clientId:
           type: integer
         origin:
           type: string
@@ -711,6 +906,8 @@ components:
           type: string
         cargoDescription:
           type: string
+        clientId:
+          type: integer
 
     TripPhoto:
       type: object
@@ -721,7 +918,6 @@ components:
           type: integer
         photoType:
           type: string
-          description: "arrival | sealed"
         photoUrl:
           type: string
         photoDataUrl:
@@ -756,10 +952,8 @@ components:
       properties:
         photoType:
           type: string
-          description: "arrival | sealed"
         photoDataUrl:
           type: string
-          description: Base64 data URL of the photo
         uploadedBy:
           type: string
       required:
@@ -786,6 +980,80 @@ components:
       required:
         - otp
 
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        contactName:
+          type: ["string", "null"]
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        gstNumber:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - phone
+        - contactName
+        - email
+        - address
+        - gstNumber
+        - notes
+        - createdAt
+        - updatedAt
+
+    CreateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        gstNumber:
+          type: string
+        notes:
+          type: string
+      required:
+        - name
+        - phone
+
+    UpdateClientBody:
+      type: object
+      properties:
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        gstNumber:
+          type: string
+        notes:
+          type: string
+
     Bill:
       type: object
       properties:
@@ -805,9 +1073,12 @@ components:
           type: number
         totalAmount:
           type: number
+        amountPaid:
+          type: number
+        paymentMethod:
+          type: ["string", "null"]
         status:
           type: string
-          description: "draft | issued | paid | overdue"
         issuedDate:
           type: ["string", "null"]
         dueDate:
@@ -829,6 +1100,8 @@ components:
         - tollCharges
         - otherCharges
         - totalAmount
+        - amountPaid
+        - paymentMethod
         - status
         - issuedDate
         - dueDate
@@ -875,6 +1148,60 @@ components:
           type: number
         dueDate:
           type: string
+        paymentMethod:
+          type: string
+
+    RecordPaymentBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+        paymentDate:
+          type: string
+        notes:
+          type: string
+      required:
+        - amount
+        - paymentMethod
+
+    InvoiceData:
+      type: object
+      properties:
+        bill:
+          $ref: "#/components/schemas/Bill"
+        trip:
+          $ref: "#/components/schemas/Trip"
+        client:
+          $ref: "#/components/schemas/Client"
+        truck:
+          $ref: "#/components/schemas/Truck"
+        driver:
+          $ref: "#/components/schemas/Driver"
+      required:
+        - bill
+        - trip
+        - client
+        - truck
+        - driver
+
+    BillsExport:
+      type: object
+      properties:
+        headers:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+      required:
+        - headers
+        - rows
 
     DashboardSummary:
       type: object
@@ -895,6 +1222,8 @@ components:
           type: integer
         pendingPhotoVerifications:
           type: integer
+        totalClients:
+          type: integer
       required:
         - totalTrucks
         - activeTrucks
@@ -904,20 +1233,4 @@ components:
         - totalRevenueThisMonth
         - pendingBills
         - pendingPhotoVerifications
-
-    BillsExport:
-      type: object
-      properties:
-        headers:
-          type: array
-          items:
-            type: string
-        rows:
-          type: array
-          items:
-            type: array
-            items:
-              type: string
-      required:
-        - headers
-        - rows
+        - totalClients

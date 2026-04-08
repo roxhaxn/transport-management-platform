@@ -15,4 +15,5 @@ export interface DashboardSummary {
   totalRevenueThisMonth: number;
   pendingBills: number;
   pendingPhotoVerifications: number;
+  totalClients: number;
 }

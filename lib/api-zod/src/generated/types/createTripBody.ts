@@ -9,6 +9,7 @@
 export interface CreateTripBody {
   truckId: number;
   driverId: number;
+  clientId?: number;
   origin: string;
   destination: string;
   clientCompany: string;

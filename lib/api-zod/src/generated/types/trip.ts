@@ -10,11 +10,12 @@ export interface Trip {
   id: number;
   truckId: number;
   driverId: number;
+  /** @nullable */
+  clientId: number | null;
   origin: string;
   destination: string;
   clientCompany: string;
   cargoDescription: string;
-  /** scheduled | in_transit | loaded | delivered | completed */
   status: string;
   /** @nullable */
   startDate: string | null;

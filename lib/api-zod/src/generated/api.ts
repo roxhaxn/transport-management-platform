@@ -8,31 +8,24 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
 
-/**
- * @summary List all trucks
- */
 export const ListTrucksResponseItem = zod.object({
   id: zod.number(),
   registrationNumber: zod.string(),
   model: zod.string(),
   capacity: zod.number(),
-  status: zod.string().describe("active | maintenance | inactive"),
+  status: zod.string(),
   driverId: zod.number().nullable(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
 export const ListTrucksResponse = zod.array(ListTrucksResponseItem);
 
-/**
- * @summary Create a new truck
- */
 export const CreateTruckBody = zod.object({
   registrationNumber: zod.string(),
   model: zod.string(),
@@ -41,9 +34,6 @@ export const CreateTruckBody = zod.object({
   driverId: zod.number().nullish(),
 });
 
-/**
- * @summary Get a truck by ID
- */
 export const GetTruckParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -53,15 +43,12 @@ export const GetTruckResponse = zod.object({
   registrationNumber: zod.string(),
   model: zod.string(),
   capacity: zod.number(),
-  status: zod.string().describe("active | maintenance | inactive"),
+  status: zod.string(),
   driverId: zod.number().nullable(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
 
-/**
- * @summary Update a truck
- */
 export const UpdateTruckParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -79,29 +66,23 @@ export const UpdateTruckResponse = zod.object({
   registrationNumber: zod.string(),
   model: zod.string(),
   capacity: zod.number(),
-  status: zod.string().describe("active | maintenance | inactive"),
+  status: zod.string(),
   driverId: zod.number().nullable(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
 
-/**
- * @summary List all drivers
- */
 export const ListDriversResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
   phone: zod.string(),
   licenseNumber: zod.string(),
-  status: zod.string().describe("active | inactive"),
+  status: zod.string(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
 export const ListDriversResponse = zod.array(ListDriversResponseItem);
 
-/**
- * @summary Create a new driver
- */
 export const CreateDriverBody = zod.object({
   name: zod.string(),
   phone: zod.string(),
@@ -109,9 +90,6 @@ export const CreateDriverBody = zod.object({
   status: zod.string().optional(),
 });
 
-/**
- * @summary Get a driver by ID
- */
 export const GetDriverParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -121,14 +99,11 @@ export const GetDriverResponse = zod.object({
   name: zod.string(),
   phone: zod.string(),
   licenseNumber: zod.string(),
-  status: zod.string().describe("active | inactive"),
+  status: zod.string(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
 
-/**
- * @summary List all trips
- */
 export const ListTripsQueryParams = zod.object({
   status: zod.coerce.string().optional(),
   truckId: zod.coerce.number().optional(),
@@ -139,13 +114,12 @@ export const ListTripsResponseItem = zod.object({
   id: zod.number(),
   truckId: zod.number(),
   driverId: zod.number(),
+  clientId: zod.number().nullable(),
   origin: zod.string(),
   destination: zod.string(),
   clientCompany: zod.string(),
   cargoDescription: zod.string(),
-  status: zod
-    .string()
-    .describe("scheduled | in_transit | loaded | delivered | completed"),
+  status: zod.string(),
   startDate: zod.string().nullable(),
   endDate: zod.string().nullable(),
   notes: zod.string().nullable(),
@@ -154,12 +128,10 @@ export const ListTripsResponseItem = zod.object({
 });
 export const ListTripsResponse = zod.array(ListTripsResponseItem);
 
-/**
- * @summary Create a new trip
- */
 export const CreateTripBody = zod.object({
   truckId: zod.number(),
   driverId: zod.number(),
+  clientId: zod.number().optional(),
   origin: zod.string(),
   destination: zod.string(),
   clientCompany: zod.string(),
@@ -168,9 +140,6 @@ export const CreateTripBody = zod.object({
   notes: zod.string().optional(),
 });
 
-/**
- * @summary Get a trip by ID
- */
 export const GetTripParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -179,13 +148,12 @@ export const GetTripResponse = zod.object({
   id: zod.number(),
   truckId: zod.number(),
   driverId: zod.number(),
+  clientId: zod.number().nullable(),
   origin: zod.string(),
   destination: zod.string(),
   clientCompany: zod.string(),
   cargoDescription: zod.string(),
-  status: zod
-    .string()
-    .describe("scheduled | in_transit | loaded | delivered | completed"),
+  status: zod.string(),
   startDate: zod.string().nullable(),
   endDate: zod.string().nullable(),
   notes: zod.string().nullable(),
@@ -193,9 +161,6 @@ export const GetTripResponse = zod.object({
   updatedAt: zod.string(),
 });
 
-/**
- * @summary Update a trip
- */
 export const UpdateTripParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -205,19 +170,19 @@ export const UpdateTripBody = zod.object({
   endDate: zod.string().optional(),
   notes: zod.string().optional(),
   cargoDescription: zod.string().optional(),
+  clientId: zod.number().optional(),
 });
 
 export const UpdateTripResponse = zod.object({
   id: zod.number(),
   truckId: zod.number(),
   driverId: zod.number(),
+  clientId: zod.number().nullable(),
   origin: zod.string(),
   destination: zod.string(),
   clientCompany: zod.string(),
   cargoDescription: zod.string(),
-  status: zod
-    .string()
-    .describe("scheduled | in_transit | loaded | delivered | completed"),
+  status: zod.string(),
   startDate: zod.string().nullable(),
   endDate: zod.string().nullable(),
   notes: zod.string().nullable(),
@@ -225,9 +190,6 @@ export const UpdateTripResponse = zod.object({
   updatedAt: zod.string(),
 });
 
-/**
- * @summary List photos for a trip
- */
 export const ListTripPhotosParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -235,7 +197,7 @@ export const ListTripPhotosParams = zod.object({
 export const ListTripPhotosResponseItem = zod.object({
   id: zod.number(),
   tripId: zod.number(),
-  photoType: zod.string().describe("arrival | sealed"),
+  photoType: zod.string(),
   photoUrl: zod.string(),
   photoDataUrl: zod.string().nullable(),
   verified: zod.boolean(),
@@ -247,22 +209,16 @@ export const ListTripPhotosResponseItem = zod.object({
 });
 export const ListTripPhotosResponse = zod.array(ListTripPhotosResponseItem);
 
-/**
- * @summary Upload a photo for a trip
- */
 export const UploadTripPhotoParams = zod.object({
   id: zod.coerce.number(),
 });
 
 export const UploadTripPhotoBody = zod.object({
-  photoType: zod.string().describe("arrival | sealed"),
-  photoDataUrl: zod.string().describe("Base64 data URL of the photo"),
+  photoType: zod.string(),
+  photoDataUrl: zod.string(),
   uploadedBy: zod.string(),
 });
 
-/**
- * @summary Request OTP to authenticate a sealed photo
- */
 export const RequestPhotoOtpParams = zod.object({
   photoId: zod.coerce.number(),
 });
@@ -272,9 +228,6 @@ export const RequestPhotoOtpResponse = zod.object({
   otpSentTo: zod.string(),
 });
 
-/**
- * @summary Verify OTP and authenticate a sealed photo
- */
 export const VerifyPhotoOtpParams = zod.object({
   photoId: zod.coerce.number(),
 });
@@ -286,7 +239,7 @@ export const VerifyPhotoOtpBody = zod.object({
 export const VerifyPhotoOtpResponse = zod.object({
   id: zod.number(),
   tripId: zod.number(),
-  photoType: zod.string().describe("arrival | sealed"),
+  photoType: zod.string(),
   photoUrl: zod.string(),
   photoDataUrl: zod.string().nullable(),
   verified: zod.boolean(),
@@ -298,11 +251,92 @@ export const VerifyPhotoOtpResponse = zod.object({
 });
 
 /**
- * @summary List all bills
+ * @summary List all clients
  */
+export const ListClientsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  phone: zod.string(),
+  email: zod.string().nullable(),
+  address: zod.string().nullable(),
+  gstNumber: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListClientsResponse = zod.array(ListClientsResponseItem);
+
+/**
+ * @summary Create a client
+ */
+export const CreateClientBody = zod.object({
+  name: zod.string(),
+  contactName: zod.string().optional(),
+  phone: zod.string(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  gstNumber: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const GetClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  phone: zod.string(),
+  email: zod.string().nullable(),
+  address: zod.string().nullable(),
+  gstNumber: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const UpdateClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateClientBody = zod.object({
+  name: zod.string().optional(),
+  contactName: zod.string().optional(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  gstNumber: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const UpdateClientResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  phone: zod.string(),
+  email: zod.string().nullable(),
+  address: zod.string().nullable(),
+  gstNumber: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const DeleteClientParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteClientResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string().optional(),
+});
+
 export const ListBillsQueryParams = zod.object({
   tripId: zod.coerce.number().optional(),
   status: zod.coerce.string().optional(),
+  clientId: zod.coerce.number().optional(),
 });
 
 export const ListBillsResponseItem = zod.object({
@@ -314,7 +348,9 @@ export const ListBillsResponseItem = zod.object({
   tollCharges: zod.number(),
   otherCharges: zod.number(),
   totalAmount: zod.number(),
-  status: zod.string().describe("draft | issued | paid | overdue"),
+  amountPaid: zod.number(),
+  paymentMethod: zod.string().nullable(),
+  status: zod.string(),
   issuedDate: zod.string().nullable(),
   dueDate: zod.string().nullable(),
   paidDate: zod.string().nullable(),
@@ -324,9 +360,6 @@ export const ListBillsResponseItem = zod.object({
 });
 export const ListBillsResponse = zod.array(ListBillsResponseItem);
 
-/**
- * @summary Create a bill for a trip
- */
 export const CreateBillBody = zod.object({
   tripId: zod.number(),
   baseAmount: zod.number(),
@@ -337,9 +370,6 @@ export const CreateBillBody = zod.object({
   notes: zod.string().optional(),
 });
 
-/**
- * @summary Get a bill by ID
- */
 export const GetBillParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -353,7 +383,9 @@ export const GetBillResponse = zod.object({
   tollCharges: zod.number(),
   otherCharges: zod.number(),
   totalAmount: zod.number(),
-  status: zod.string().describe("draft | issued | paid | overdue"),
+  amountPaid: zod.number(),
+  paymentMethod: zod.string().nullable(),
+  status: zod.string(),
   issuedDate: zod.string().nullable(),
   dueDate: zod.string().nullable(),
   paidDate: zod.string().nullable(),
@@ -362,9 +394,6 @@ export const GetBillResponse = zod.object({
   updatedAt: zod.string(),
 });
 
-/**
- * @summary Update a bill
- */
 export const UpdateBillParams = zod.object({
   id: zod.coerce.number(),
 });
@@ -377,6 +406,7 @@ export const UpdateBillBody = zod.object({
   tollCharges: zod.number().optional(),
   otherCharges: zod.number().optional(),
   dueDate: zod.string().optional(),
+  paymentMethod: zod.string().optional(),
 });
 
 export const UpdateBillResponse = zod.object({
@@ -388,7 +418,9 @@ export const UpdateBillResponse = zod.object({
   tollCharges: zod.number(),
   otherCharges: zod.number(),
   totalAmount: zod.number(),
-  status: zod.string().describe("draft | issued | paid | overdue"),
+  amountPaid: zod.number(),
+  paymentMethod: zod.string().nullable(),
+  status: zod.string(),
   issuedDate: zod.string().nullable(),
   dueDate: zod.string().nullable(),
   paidDate: zod.string().nullable(),
@@ -398,8 +430,120 @@ export const UpdateBillResponse = zod.object({
 });
 
 /**
- * @summary Get dashboard summary stats
+ * @summary Record a payment against a bill
  */
+export const RecordPaymentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RecordPaymentBody = zod.object({
+  amount: zod.number(),
+  paymentMethod: zod.string(),
+  paymentDate: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const RecordPaymentResponse = zod.object({
+  id: zod.number(),
+  tripId: zod.number(),
+  billNumber: zod.string(),
+  baseAmount: zod.number(),
+  fuelSurcharge: zod.number(),
+  tollCharges: zod.number(),
+  otherCharges: zod.number(),
+  totalAmount: zod.number(),
+  amountPaid: zod.number(),
+  paymentMethod: zod.string().nullable(),
+  status: zod.string(),
+  issuedDate: zod.string().nullable(),
+  dueDate: zod.string().nullable(),
+  paidDate: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const ExportBillsCsvResponse = zod.object({
+  headers: zod.array(zod.string()),
+  rows: zod.array(zod.array(zod.string())),
+});
+
+/**
+ * @summary Get full invoice data for PDF generation
+ */
+export const GetInvoiceDataParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetInvoiceDataResponse = zod.object({
+  bill: zod.object({
+    id: zod.number(),
+    tripId: zod.number(),
+    billNumber: zod.string(),
+    baseAmount: zod.number(),
+    fuelSurcharge: zod.number(),
+    tollCharges: zod.number(),
+    otherCharges: zod.number(),
+    totalAmount: zod.number(),
+    amountPaid: zod.number(),
+    paymentMethod: zod.string().nullable(),
+    status: zod.string(),
+    issuedDate: zod.string().nullable(),
+    dueDate: zod.string().nullable(),
+    paidDate: zod.string().nullable(),
+    notes: zod.string().nullable(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  trip: zod.object({
+    id: zod.number(),
+    truckId: zod.number(),
+    driverId: zod.number(),
+    clientId: zod.number().nullable(),
+    origin: zod.string(),
+    destination: zod.string(),
+    clientCompany: zod.string(),
+    cargoDescription: zod.string(),
+    status: zod.string(),
+    startDate: zod.string().nullable(),
+    endDate: zod.string().nullable(),
+    notes: zod.string().nullable(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  client: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    contactName: zod.string().nullable(),
+    phone: zod.string(),
+    email: zod.string().nullable(),
+    address: zod.string().nullable(),
+    gstNumber: zod.string().nullable(),
+    notes: zod.string().nullable(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  truck: zod.object({
+    id: zod.number(),
+    registrationNumber: zod.string(),
+    model: zod.string(),
+    capacity: zod.number(),
+    status: zod.string(),
+    driverId: zod.number().nullable(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  driver: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    phone: zod.string(),
+    licenseNumber: zod.string(),
+    status: zod.string(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+});
+
 export const GetDashboardSummaryResponse = zod.object({
   totalTrucks: zod.number(),
   activeTrucks: zod.number(),
@@ -409,22 +553,19 @@ export const GetDashboardSummaryResponse = zod.object({
   totalRevenueThisMonth: zod.number(),
   pendingBills: zod.number(),
   pendingPhotoVerifications: zod.number(),
+  totalClients: zod.number(),
 });
 
-/**
- * @summary Get recent trips for dashboard
- */
 export const GetRecentTripsResponseItem = zod.object({
   id: zod.number(),
   truckId: zod.number(),
   driverId: zod.number(),
+  clientId: zod.number().nullable(),
   origin: zod.string(),
   destination: zod.string(),
   clientCompany: zod.string(),
   cargoDescription: zod.string(),
-  status: zod
-    .string()
-    .describe("scheduled | in_transit | loaded | delivered | completed"),
+  status: zod.string(),
   startDate: zod.string().nullable(),
   endDate: zod.string().nullable(),
   notes: zod.string().nullable(),
@@ -433,13 +574,10 @@ export const GetRecentTripsResponseItem = zod.object({
 });
 export const GetRecentTripsResponse = zod.array(GetRecentTripsResponseItem);
 
-/**
- * @summary Get photos pending OTP authentication
- */
 export const GetPendingPhotosResponseItem = zod.object({
   id: zod.number(),
   tripId: zod.number(),
-  photoType: zod.string().describe("arrival | sealed"),
+  photoType: zod.string(),
   photoUrl: zod.string(),
   photoDataUrl: zod.string().nullable(),
   verified: zod.boolean(),
@@ -452,9 +590,23 @@ export const GetPendingPhotosResponseItem = zod.object({
 export const GetPendingPhotosResponse = zod.array(GetPendingPhotosResponseItem);
 
 /**
- * @summary Export bills as CSV data
+ * @summary Get current user info and role
  */
-export const ExportBillsCsvResponse = zod.object({
-  headers: zod.array(zod.string()),
-  rows: zod.array(zod.array(zod.string())),
+export const GetMeResponse = zod.object({
+  userId: zod.string(),
+  role: zod.string(),
+  email: zod.string().nullish(),
+});
+
+/**
+ * @summary Set a user role (owner only)
+ */
+export const SetUserRoleBody = zod.object({
+  targetUserId: zod.string(),
+  role: zod.string(),
+});
+
+export const SetUserRoleResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string().optional(),
 });

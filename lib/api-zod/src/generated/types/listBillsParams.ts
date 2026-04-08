@@ -9,4 +9,5 @@
 export type ListBillsParams = {
   tripId?: number;
   status?: string;
+  clientId?: number;
 };

@@ -6,6 +6,8 @@ import tripsRouter from "./trips";
 import photosRouter from "./photos";
 import billingRouter from "./billing";
 import dashboardRouter from "./dashboard";
+import clientsRouter from "./clients";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
@@ -16,5 +18,7 @@ router.use(tripsRouter);
 router.use(photosRouter);
 router.use(billingRouter);
 router.use(dashboardRouter);
+router.use(clientsRouter);
+router.use(authRouter);
 
 export default router;

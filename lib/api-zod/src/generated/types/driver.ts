@@ -11,7 +11,6 @@ export interface Driver {
   name: string;
   phone: string;
   licenseNumber: string;
-  /** active | inactive */
   status: string;
   createdAt: string;
   updatedAt: string;

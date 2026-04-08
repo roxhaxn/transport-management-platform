@@ -14,4 +14,5 @@ export interface UpdateBillBody {
   tollCharges?: number;
   otherCharges?: number;
   dueDate?: string;
+  paymentMethod?: string;
 }

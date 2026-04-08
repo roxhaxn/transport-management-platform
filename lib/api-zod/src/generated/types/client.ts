@@ -6,20 +6,20 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface TripPhoto {
+export interface Client {
   id: number;
-  tripId: number;
-  photoType: string;
-  photoUrl: string;
+  name: string;
   /** @nullable */
-  photoDataUrl: string | null;
-  verified: boolean;
+  contactName: string | null;
+  phone: string;
   /** @nullable */
-  verifiedAt: string | null;
+  email: string | null;
   /** @nullable */
-  otpCode: string | null;
+  address: string | null;
   /** @nullable */
-  otpExpiry: string | null;
-  uploadedBy: string;
+  gstNumber: string | null;
+  /** @nullable */
+  notes: string | null;
   createdAt: string;
+  updatedAt: string;
 }

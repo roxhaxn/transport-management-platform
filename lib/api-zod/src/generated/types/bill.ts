@@ -15,7 +15,9 @@ export interface Bill {
   tollCharges: number;
   otherCharges: number;
   totalAmount: number;
-  /** draft | issued | paid | overdue */
+  amountPaid: number;
+  /** @nullable */
+  paymentMethod: string | null;
   status: string;
   /** @nullable */
   issuedDate: string | null;

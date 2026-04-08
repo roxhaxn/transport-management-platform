@@ -11,6 +11,8 @@ export const billsTable = pgTable("bills", {
   tollCharges: numeric("toll_charges", { precision: 12, scale: 2 }).notNull().default("0"),
   otherCharges: numeric("other_charges", { precision: 12, scale: 2 }).notNull().default("0"),
   totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
+  amountPaid: numeric("amount_paid", { precision: 12, scale: 2 }).notNull().default("0"),
+  paymentMethod: text("payment_method"),
   status: text("status").notNull().default("draft"),
   issuedDate: timestamp("issued_date", { withTimezone: true }),
   dueDate: timestamp("due_date", { withTimezone: true }),

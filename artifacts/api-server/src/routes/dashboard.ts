@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { db, trucksTable, driversTable, tripsTable, billsTable, tripPhotosTable } from "@workspace/db";
+import { db, trucksTable, driversTable, tripsTable, billsTable, tripPhotosTable, clientsTable } from "@workspace/db";
 import { eq, and, gte, count, sum, sql } from "drizzle-orm";
+import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
-router.get("/dashboard/summary", async (req, res) => {
+router.get("/dashboard/summary", requireAuth, async (req, res) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -27,6 +28,7 @@ router.get("/dashboard/summary", async (req, res) => {
     const [pendingPhotosRow] = await db.select({ count: count() }).from(tripPhotosTable).where(
       and(eq(tripPhotosTable.verified, false), eq(tripPhotosTable.photoType, "sealed"))
     );
+    const [totalClientsRow] = await db.select({ count: count() }).from(clientsTable);
 
     res.json({
       totalTrucks: totalTrucksRow.count,
@@ -37,6 +39,7 @@ router.get("/dashboard/summary", async (req, res) => {
       totalRevenueThisMonth: Number(revenueRow.total ?? 0),
       pendingBills: pendingBillsRow.count,
       pendingPhotoVerifications: pendingPhotosRow.count,
+      totalClients: totalClientsRow.count,
     });
   } catch (err) {
     req.log.error(err);
@@ -44,7 +47,7 @@ router.get("/dashboard/summary", async (req, res) => {
   }
 });
 
-router.get("/dashboard/recent-trips", async (req, res) => {
+router.get("/dashboard/recent-trips", requireAuth, async (req, res) => {
   try {
     const trips = await db.select().from(tripsTable).orderBy(sql`${tripsTable.createdAt} DESC`).limit(10);
     res.json(trips.map((t) => ({
@@ -60,7 +63,7 @@ router.get("/dashboard/recent-trips", async (req, res) => {
   }
 });
 
-router.get("/dashboard/pending-photos", async (req, res) => {
+router.get("/dashboard/pending-photos", requireAuth, async (req, res) => {
   try {
     const photos = await db.select().from(tripPhotosTable).where(
       and(eq(tripPhotosTable.verified, false), eq(tripPhotosTable.photoType, "sealed"))

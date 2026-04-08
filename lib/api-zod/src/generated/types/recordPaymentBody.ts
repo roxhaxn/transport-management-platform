@@ -6,8 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface UploadPhotoBody {
-  photoType: string;
-  photoDataUrl: string;
-  uploadedBy: string;
+export interface RecordPaymentBody {
+  amount: number;
+  paymentMethod: string;
+  paymentDate?: string;
+  notes?: string;
 }

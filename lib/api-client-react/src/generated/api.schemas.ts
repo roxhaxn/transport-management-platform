@@ -13,12 +13,28 @@ export interface ErrorResponse {
   error: string;
 }
 
+export interface SuccessResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface UserInfo {
+  userId: string;
+  role: string;
+  /** @nullable */
+  email?: string | null;
+}
+
+export interface SetRoleBody {
+  targetUserId: string;
+  role: string;
+}
+
 export interface Truck {
   id: number;
   registrationNumber: string;
   model: string;
   capacity: number;
-  /** active | maintenance | inactive */
   status: string;
   /** @nullable */
   driverId: number | null;
@@ -49,7 +65,6 @@ export interface Driver {
   name: string;
   phone: string;
   licenseNumber: string;
-  /** active | inactive */
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -66,11 +81,12 @@ export interface Trip {
   id: number;
   truckId: number;
   driverId: number;
+  /** @nullable */
+  clientId: number | null;
   origin: string;
   destination: string;
   clientCompany: string;
   cargoDescription: string;
-  /** scheduled | in_transit | loaded | delivered | completed */
   status: string;
   /** @nullable */
   startDate: string | null;
@@ -85,6 +101,7 @@ export interface Trip {
 export interface CreateTripBody {
   truckId: number;
   driverId: number;
+  clientId?: number;
   origin: string;
   destination: string;
   clientCompany: string;
@@ -98,12 +115,12 @@ export interface UpdateTripBody {
   endDate?: string;
   notes?: string;
   cargoDescription?: string;
+  clientId?: number;
 }
 
 export interface TripPhoto {
   id: number;
   tripId: number;
-  /** arrival | sealed */
   photoType: string;
   photoUrl: string;
   /** @nullable */
@@ -120,9 +137,7 @@ export interface TripPhoto {
 }
 
 export interface UploadPhotoBody {
-  /** arrival | sealed */
   photoType: string;
-  /** Base64 data URL of the photo */
   photoDataUrl: string;
   uploadedBy: string;
 }
@@ -136,6 +151,44 @@ export interface VerifyOtpBody {
   otp: string;
 }
 
+export interface Client {
+  id: number;
+  name: string;
+  /** @nullable */
+  contactName: string | null;
+  phone: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  gstNumber: string | null;
+  /** @nullable */
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateClientBody {
+  name: string;
+  contactName?: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  gstNumber?: string;
+  notes?: string;
+}
+
+export interface UpdateClientBody {
+  name?: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  gstNumber?: string;
+  notes?: string;
+}
+
 export interface Bill {
   id: number;
   tripId: number;
@@ -145,7 +198,9 @@ export interface Bill {
   tollCharges: number;
   otherCharges: number;
   totalAmount: number;
-  /** draft | issued | paid | overdue */
+  amountPaid: number;
+  /** @nullable */
+  paymentMethod: string | null;
   status: string;
   /** @nullable */
   issuedDate: string | null;
@@ -177,6 +232,27 @@ export interface UpdateBillBody {
   tollCharges?: number;
   otherCharges?: number;
   dueDate?: string;
+  paymentMethod?: string;
+}
+
+export interface RecordPaymentBody {
+  amount: number;
+  paymentMethod: string;
+  paymentDate?: string;
+  notes?: string;
+}
+
+export interface InvoiceData {
+  bill: Bill;
+  trip: Trip;
+  client: Client;
+  truck: Truck;
+  driver: Driver;
+}
+
+export interface BillsExport {
+  headers: string[];
+  rows: string[][];
 }
 
 export interface DashboardSummary {
@@ -188,11 +264,7 @@ export interface DashboardSummary {
   totalRevenueThisMonth: number;
   pendingBills: number;
   pendingPhotoVerifications: number;
-}
-
-export interface BillsExport {
-  headers: string[];
-  rows: string[][];
+  totalClients: number;
 }
 
 export type ListTripsParams = {
@@ -204,4 +276,5 @@ export type ListTripsParams = {
 export type ListBillsParams = {
   tripId?: number;
   status?: string;
+  clientId?: number;
 };

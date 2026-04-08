@@ -6,10 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface UpdateTripBody {
-  status?: string;
-  endDate?: string;
+export interface UpdateClientBody {
+  name?: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  gstNumber?: string;
   notes?: string;
-  cargoDescription?: string;
-  clientId?: number;
 }

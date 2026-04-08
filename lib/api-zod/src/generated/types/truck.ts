@@ -11,7 +11,6 @@ export interface Truck {
   registrationNumber: string;
   model: string;
   capacity: number;
-  /** active | maintenance | inactive */
   status: string;
   /** @nullable */
   driverId: number | null;

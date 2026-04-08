@@ -6,6 +6,7 @@ export const tripsTable = pgTable("trips", {
   id: serial("id").primaryKey(),
   truckId: integer("truck_id").notNull(),
   driverId: integer("driver_id").notNull(),
+  clientId: integer("client_id"),
   origin: text("origin").notNull(),
   destination: text("destination").notNull(),
   clientCompany: text("client_company").notNull(),

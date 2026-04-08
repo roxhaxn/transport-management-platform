@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { db, billsTable, tripsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
-import { CreateBillBody, UpdateBillBody, ListBillsQueryParams } from "@workspace/api-zod";
+import { db, billsTable, tripsTable, clientsTable, trucksTable, driversTable } from "@workspace/db";
+import { eq, and, sql } from "drizzle-orm";
+import { CreateBillBody, UpdateBillBody, ListBillsQueryParams, RecordPaymentBody } from "@workspace/api-zod";
+import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
@@ -13,6 +14,8 @@ function formatBill(b: typeof billsTable.$inferSelect) {
     tollCharges: Number(b.tollCharges),
     otherCharges: Number(b.otherCharges),
     totalAmount: Number(b.totalAmount),
+    amountPaid: Number(b.amountPaid),
+    paymentMethod: b.paymentMethod ?? null,
     issuedDate: b.issuedDate ? b.issuedDate.toISOString() : null,
     dueDate: b.dueDate ? b.dueDate.toISOString() : null,
     paidDate: b.paidDate ? b.paidDate.toISOString() : null,
@@ -29,7 +32,7 @@ function generateBillNumber() {
   return `BILL-${year}${month}-${random}`;
 }
 
-router.get("/billing", async (req, res) => {
+router.get("/billing", requireAuth, async (req, res) => {
   try {
     const params = ListBillsQueryParams.safeParse(req.query);
     const conditions = [];
@@ -47,7 +50,7 @@ router.get("/billing", async (req, res) => {
   }
 });
 
-router.post("/billing", async (req, res) => {
+router.post("/billing", requireAuth, async (req, res) => {
   const parsed = CreateBillBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request body" });
@@ -68,6 +71,7 @@ router.post("/billing", async (req, res) => {
       tollCharges: String(toll),
       otherCharges: String(other),
       totalAmount: String(total),
+      amountPaid: "0",
       status: "draft",
       dueDate: parsed.data.dueDate ? new Date(parsed.data.dueDate) : null,
       issuedDate: new Date(),
@@ -80,14 +84,14 @@ router.post("/billing", async (req, res) => {
   }
 });
 
-router.get("/billing/export/csv", async (req, res) => {
+router.get("/billing/export/csv", requireAuth, async (req, res) => {
   try {
     const bills = await db.select({
       bill: billsTable,
       trip: tripsTable,
     }).from(billsTable).leftJoin(tripsTable, eq(billsTable.tripId, tripsTable.id)).orderBy(billsTable.id);
 
-    const headers = ["Bill Number", "Client Company", "Origin", "Destination", "Base Amount", "Fuel Surcharge", "Toll Charges", "Other Charges", "Total Amount", "Status", "Issued Date", "Due Date", "Paid Date", "Notes"];
+    const headers = ["Bill Number", "Client Company", "Origin", "Destination", "Base Amount", "Fuel Surcharge", "Toll Charges", "Other Charges", "Total Amount", "Amount Paid", "Payment Method", "Status", "Issued Date", "Due Date", "Paid Date", "Notes"];
     const rows = bills.map(({ bill, trip }) => [
       bill.billNumber,
       trip?.clientCompany ?? "",
@@ -98,6 +102,8 @@ router.get("/billing/export/csv", async (req, res) => {
       String(Number(bill.tollCharges)),
       String(Number(bill.otherCharges)),
       String(Number(bill.totalAmount)),
+      String(Number(bill.amountPaid)),
+      bill.paymentMethod ?? "",
       bill.status,
       bill.issuedDate ? bill.issuedDate.toISOString().split("T")[0] : "",
       bill.dueDate ? bill.dueDate.toISOString().split("T")[0] : "",
@@ -112,7 +118,94 @@ router.get("/billing/export/csv", async (req, res) => {
   }
 });
 
-router.get("/billing/:id", async (req, res) => {
+router.get("/billing/:id/invoice-data", requireAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const [bill] = await db.select().from(billsTable).where(eq(billsTable.id, id));
+    if (!bill) {
+      res.status(404).json({ error: "Bill not found" });
+      return;
+    }
+    const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, bill.tripId));
+    if (!trip) {
+      res.status(404).json({ error: "Trip not found" });
+      return;
+    }
+    const [truck] = await db.select().from(trucksTable).where(eq(trucksTable.id, trip.truckId));
+    const [driver] = await db.select().from(driversTable).where(eq(driversTable.id, trip.driverId));
+    const client = trip.clientId
+      ? (await db.select().from(clientsTable).where(eq(clientsTable.id, trip.clientId)))[0] ?? null
+      : null;
+
+    const formatTrip = (t: typeof tripsTable.$inferSelect) => ({
+      ...t,
+      startDate: t.startDate ? t.startDate.toISOString() : null,
+      endDate: t.endDate ? t.endDate.toISOString() : null,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+    });
+    const formatTruck = (t: typeof trucksTable.$inferSelect) => ({
+      ...t,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+    });
+    const formatDriver = (d: typeof driversTable.$inferSelect) => ({
+      ...d,
+      createdAt: d.createdAt.toISOString(),
+      updatedAt: d.updatedAt.toISOString(),
+    });
+    const formatClient = (c: typeof clientsTable.$inferSelect) => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+      updatedAt: c.updatedAt.toISOString(),
+    });
+
+    res.json({
+      bill: formatBill(bill),
+      trip: formatTrip(trip),
+      client: client ? formatClient(client) : null,
+      truck: truck ? formatTruck(truck) : null,
+      driver: driver ? formatDriver(driver) : null,
+    });
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Failed to get invoice data" });
+  }
+});
+
+router.post("/billing/:id/payment", requireAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  const parsed = RecordPaymentBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request body" });
+    return;
+  }
+  try {
+    const [bill] = await db.select().from(billsTable).where(eq(billsTable.id, id));
+    if (!bill) {
+      res.status(404).json({ error: "Bill not found" });
+      return;
+    }
+
+    const newAmountPaid = Number(bill.amountPaid) + parsed.data.amount;
+    const isFullyPaid = newAmountPaid >= Number(bill.totalAmount);
+    const newStatus = isFullyPaid ? "paid" : "issued";
+
+    const [updated] = await db.update(billsTable).set({
+      amountPaid: String(newAmountPaid),
+      paymentMethod: parsed.data.paymentMethod,
+      status: newStatus,
+      paidDate: isFullyPaid ? (parsed.data.paymentDate ? new Date(parsed.data.paymentDate) : new Date()) : bill.paidDate,
+    }).where(eq(billsTable.id, id)).returning();
+
+    res.json(formatBill(updated));
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Failed to record payment" });
+  }
+});
+
+router.get("/billing/:id", requireAuth, async (req, res) => {
   const id = Number(req.params.id);
   try {
     const [bill] = await db.select().from(billsTable).where(eq(billsTable.id, id));
@@ -127,7 +220,7 @@ router.get("/billing/:id", async (req, res) => {
   }
 });
 
-router.patch("/billing/:id", async (req, res) => {
+router.patch("/billing/:id", requireAuth, async (req, res) => {
   const id = Number(req.params.id);
   const parsed = UpdateBillBody.safeParse(req.body);
   if (!parsed.success) {
@@ -143,6 +236,7 @@ router.patch("/billing/:id", async (req, res) => {
     if (parsed.data.fuelSurcharge !== undefined) updates.fuelSurcharge = String(parsed.data.fuelSurcharge);
     if (parsed.data.tollCharges !== undefined) updates.tollCharges = String(parsed.data.tollCharges);
     if (parsed.data.otherCharges !== undefined) updates.otherCharges = String(parsed.data.otherCharges);
+    if (parsed.data.paymentMethod !== undefined) updates.paymentMethod = parsed.data.paymentMethod;
 
     const [bill] = await db.select().from(billsTable).where(eq(billsTable.id, id));
     if (!bill) {
