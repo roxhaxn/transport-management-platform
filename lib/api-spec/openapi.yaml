@@ -3,13 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Transport Management Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: trucks
+    description: Truck management
+  - name: drivers
+    description: Driver management
+  - name: trips
+    description: Trip management
+  - name: photos
+    description: Photo upload and verification
+  - name: billing
+    description: Billing and invoicing
+  - name: dashboard
+    description: Dashboard summaries
 paths:
   /healthz:
     get:
@@ -24,6 +36,475 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /trucks:
+    get:
+      operationId: listTrucks
+      tags: [trucks]
+      summary: List all trucks
+      responses:
+        "200":
+          description: List of trucks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Truck"
+    post:
+      operationId: createTruck
+      tags: [trucks]
+      summary: Create a new truck
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTruckBody"
+      responses:
+        "201":
+          description: Truck created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Truck"
+
+  /trucks/{id}:
+    get:
+      operationId: getTruck
+      tags: [trucks]
+      summary: Get a truck by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Truck detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Truck"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTruck
+      tags: [trucks]
+      summary: Update a truck
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTruckBody"
+      responses:
+        "200":
+          description: Truck updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Truck"
+
+  /drivers:
+    get:
+      operationId: listDrivers
+      tags: [drivers]
+      summary: List all drivers
+      responses:
+        "200":
+          description: List of drivers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Driver"
+    post:
+      operationId: createDriver
+      tags: [drivers]
+      summary: Create a new driver
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDriverBody"
+      responses:
+        "201":
+          description: Driver created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+
+  /drivers/{id}:
+    get:
+      operationId: getDriver
+      tags: [drivers]
+      summary: Get a driver by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Driver detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /trips:
+    get:
+      operationId: listTrips
+      tags: [trips]
+      summary: List all trips
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: truckId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: driverId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+    post:
+      operationId: createTrip
+      tags: [trips]
+      summary: Create a new trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTripBody"
+      responses:
+        "201":
+          description: Trip created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  /trips/{id}:
+    get:
+      operationId: getTrip
+      tags: [trips]
+      summary: Get a trip by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trip detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTrip
+      tags: [trips]
+      summary: Update a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripBody"
+      responses:
+        "200":
+          description: Trip updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+
+  /trips/{id}/photos:
+    get:
+      operationId: listTripPhotos
+      tags: [photos]
+      summary: List photos for a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripPhoto"
+    post:
+      operationId: uploadTripPhoto
+      tags: [photos]
+      summary: Upload a photo for a trip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadPhotoBody"
+      responses:
+        "201":
+          description: Photo uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPhoto"
+
+  /photos/{photoId}/request-otp:
+    post:
+      operationId: requestPhotoOtp
+      tags: [photos]
+      summary: Request OTP to authenticate a sealed photo
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpResponse"
+
+  /photos/{photoId}/verify-otp:
+    post:
+      operationId: verifyPhotoOtp
+      tags: [photos]
+      summary: Verify OTP and authenticate a sealed photo
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpBody"
+      responses:
+        "200":
+          description: Photo verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripPhoto"
+        "400":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /billing:
+    get:
+      operationId: listBills
+      tags: [billing]
+      summary: List all bills
+      parameters:
+        - name: tripId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bill"
+    post:
+      operationId: createBill
+      tags: [billing]
+      summary: Create a bill for a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBillBody"
+      responses:
+        "201":
+          description: Bill created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bill"
+
+  /billing/{id}:
+    get:
+      operationId: getBill
+      tags: [billing]
+      summary: Get a bill by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bill detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bill"
+    patch:
+      operationId: updateBill
+      tags: [billing]
+      summary: Update a bill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBillBody"
+      responses:
+        "200":
+          description: Bill updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bill"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-trips:
+    get:
+      operationId: getRecentTrips
+      tags: [dashboard]
+      summary: Get recent trips for dashboard
+      responses:
+        "200":
+          description: Recent trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+
+  /dashboard/pending-photos:
+    get:
+      operationId: getPendingPhotos
+      tags: [dashboard]
+      summary: Get photos pending OTP authentication
+      responses:
+        "200":
+          description: Pending photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripPhoto"
+
+  /billing/export/csv:
+    get:
+      operationId: exportBillsCsv
+      tags: [billing]
+      summary: Export bills as CSV data
+      responses:
+        "200":
+          description: Bills CSV data as array of rows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillsExport"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +515,409 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Truck:
+      type: object
+      properties:
+        id:
+          type: integer
+        registrationNumber:
+          type: string
+        model:
+          type: string
+        capacity:
+          type: number
+        status:
+          type: string
+          description: "active | maintenance | inactive"
+        driverId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - registrationNumber
+        - model
+        - capacity
+        - status
+        - driverId
+        - createdAt
+        - updatedAt
+
+    CreateTruckBody:
+      type: object
+      properties:
+        registrationNumber:
+          type: string
+        model:
+          type: string
+        capacity:
+          type: number
+        status:
+          type: string
+        driverId:
+          type: ["integer", "null"]
+      required:
+        - registrationNumber
+        - model
+        - capacity
+
+    UpdateTruckBody:
+      type: object
+      properties:
+        registrationNumber:
+          type: string
+        model:
+          type: string
+        capacity:
+          type: number
+        status:
+          type: string
+        driverId:
+          type: ["integer", "null"]
+
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        licenseNumber:
+          type: string
+        status:
+          type: string
+          description: "active | inactive"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - phone
+        - licenseNumber
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateDriverBody:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        licenseNumber:
+          type: string
+        status:
+          type: string
+      required:
+        - name
+        - phone
+        - licenseNumber
+
+    Trip:
+      type: object
+      properties:
+        id:
+          type: integer
+        truckId:
+          type: integer
+        driverId:
+          type: integer
+        origin:
+          type: string
+        destination:
+          type: string
+        clientCompany:
+          type: string
+        cargoDescription:
+          type: string
+        status:
+          type: string
+          description: "scheduled | in_transit | loaded | delivered | completed"
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - truckId
+        - driverId
+        - origin
+        - destination
+        - clientCompany
+        - cargoDescription
+        - status
+        - startDate
+        - endDate
+        - notes
+        - createdAt
+        - updatedAt
+
+    CreateTripBody:
+      type: object
+      properties:
+        truckId:
+          type: integer
+        driverId:
+          type: integer
+        origin:
+          type: string
+        destination:
+          type: string
+        clientCompany:
+          type: string
+        cargoDescription:
+          type: string
+        startDate:
+          type: string
+        notes:
+          type: string
+      required:
+        - truckId
+        - driverId
+        - origin
+        - destination
+        - clientCompany
+        - cargoDescription
+
+    UpdateTripBody:
+      type: object
+      properties:
+        status:
+          type: string
+        endDate:
+          type: string
+        notes:
+          type: string
+        cargoDescription:
+          type: string
+
+    TripPhoto:
+      type: object
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        photoType:
+          type: string
+          description: "arrival | sealed"
+        photoUrl:
+          type: string
+        photoDataUrl:
+          type: ["string", "null"]
+        verified:
+          type: boolean
+        verifiedAt:
+          type: ["string", "null"]
+        otpCode:
+          type: ["string", "null"]
+        otpExpiry:
+          type: ["string", "null"]
+        uploadedBy:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - tripId
+        - photoType
+        - photoUrl
+        - photoDataUrl
+        - verified
+        - verifiedAt
+        - otpCode
+        - otpExpiry
+        - uploadedBy
+        - createdAt
+
+    UploadPhotoBody:
+      type: object
+      properties:
+        photoType:
+          type: string
+          description: "arrival | sealed"
+        photoDataUrl:
+          type: string
+          description: Base64 data URL of the photo
+        uploadedBy:
+          type: string
+      required:
+        - photoType
+        - photoDataUrl
+        - uploadedBy
+
+    OtpResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        otpSentTo:
+          type: string
+      required:
+        - message
+        - otpSentTo
+
+    VerifyOtpBody:
+      type: object
+      properties:
+        otp:
+          type: string
+      required:
+        - otp
+
+    Bill:
+      type: object
+      properties:
+        id:
+          type: integer
+        tripId:
+          type: integer
+        billNumber:
+          type: string
+        baseAmount:
+          type: number
+        fuelSurcharge:
+          type: number
+        tollCharges:
+          type: number
+        otherCharges:
+          type: number
+        totalAmount:
+          type: number
+        status:
+          type: string
+          description: "draft | issued | paid | overdue"
+        issuedDate:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+        paidDate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - tripId
+        - billNumber
+        - baseAmount
+        - fuelSurcharge
+        - tollCharges
+        - otherCharges
+        - totalAmount
+        - status
+        - issuedDate
+        - dueDate
+        - paidDate
+        - notes
+        - createdAt
+        - updatedAt
+
+    CreateBillBody:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        baseAmount:
+          type: number
+        fuelSurcharge:
+          type: number
+        tollCharges:
+          type: number
+        otherCharges:
+          type: number
+        dueDate:
+          type: string
+        notes:
+          type: string
+      required:
+        - tripId
+        - baseAmount
+
+    UpdateBillBody:
+      type: object
+      properties:
+        status:
+          type: string
+        paidDate:
+          type: string
+        notes:
+          type: string
+        fuelSurcharge:
+          type: number
+        tollCharges:
+          type: number
+        otherCharges:
+          type: number
+        dueDate:
+          type: string
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalTrucks:
+          type: integer
+        activeTrucks:
+          type: integer
+        totalDrivers:
+          type: integer
+        activeTrips:
+          type: integer
+        completedTripsThisMonth:
+          type: integer
+        totalRevenueThisMonth:
+          type: number
+        pendingBills:
+          type: integer
+        pendingPhotoVerifications:
+          type: integer
+      required:
+        - totalTrucks
+        - activeTrucks
+        - totalDrivers
+        - activeTrips
+        - completedTripsThisMonth
+        - totalRevenueThisMonth
+        - pendingBills
+        - pendingPhotoVerifications
+
+    BillsExport:
+      type: object
+      properties:
+        headers:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+      required:
+        - headers
+        - rows
