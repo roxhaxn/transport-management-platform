@@ -626,6 +626,40 @@ paths:
                 items:
                   $ref: "#/components/schemas/TripPhoto"
 
+  /dashboard/driver-activity:
+    get:
+      operationId: getDriverActivity
+      tags: [dashboard]
+      summary: Get all drivers with their current active trip
+      responses:
+        "200":
+          description: Driver activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DriverActivity"
+
+  /auth/setup-owner:
+    post:
+      operationId: setupOwner
+      tags: [health]
+      summary: First-time owner setup (only works if no owner exists yet)
+      responses:
+        "200":
+          description: Owner role set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Owner already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /auth/me:
     get:
       operationId: getMe
@@ -1202,6 +1236,24 @@ components:
       required:
         - headers
         - rows
+
+    DriverActivity:
+      type: object
+      properties:
+        driver:
+          $ref: "#/components/schemas/Driver"
+        currentTrip:
+          oneOf:
+            - $ref: "#/components/schemas/Trip"
+            - type: "null"
+        truck:
+          oneOf:
+            - $ref: "#/components/schemas/Truck"
+            - type: "null"
+      required:
+        - driver
+        - currentTrip
+        - truck
 
     DashboardSummary:
       type: object

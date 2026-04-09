@@ -16,6 +16,7 @@ export * from "./createTripBody";
 export * from "./createTruckBody";
 export * from "./dashboardSummary";
 export * from "./driver";
+export * from "./driverActivity";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./invoiceData";

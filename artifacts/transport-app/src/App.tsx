@@ -14,6 +14,7 @@ import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
 import Billing from "@/pages/billing";
 import Clients from "@/pages/clients";
+import Setup from "@/pages/setup";
 import DriverPortal from "@/pages/driver-portal";
 import Verify from "@/pages/verify";
 import NotFound from "@/pages/not-found";
@@ -74,6 +75,12 @@ function Router() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
           <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
         </div>
+      </Route>
+
+      <Route path="/setup">
+        <Show when="signed-in" fallback={<Redirect to="/sign-in" />}>
+          <Setup />
+        </Show>
       </Route>
 
       <Route path="/driver-portal">

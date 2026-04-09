@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, trucksTable, driversTable, tripsTable, billsTable, tripPhotosTable, clientsTable } from "@workspace/db";
-import { eq, and, gte, count, sum, sql } from "drizzle-orm";
+import { eq, and, gte, count, sum, sql, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
@@ -77,6 +77,53 @@ router.get("/dashboard/pending-photos", requireAuth, async (req, res) => {
   } catch (err) {
     req.log.error(err);
     res.status(500).json({ error: "Failed to get pending photos" });
+  }
+});
+
+router.get("/dashboard/driver-activity", requireAuth, async (req, res) => {
+  try {
+    const drivers = await db.select().from(driversTable).orderBy(driversTable.name);
+    const activeTrips = await db.select().from(tripsTable).where(
+      sql`${tripsTable.status} IN ('scheduled', 'in_transit', 'loaded')`
+    );
+
+    const truckIds = [...new Set(activeTrips.map(t => t.truckId).filter(Boolean))];
+    const trucks = truckIds.length > 0
+      ? await db.select().from(trucksTable).where(inArray(trucksTable.id, truckIds))
+      : [];
+
+    const activity = drivers.map((driver) => {
+      const currentTrip = activeTrips.find((t) => t.driverId === driver.id) ?? null;
+      const truck = currentTrip ? trucks.find((t) => t.id === currentTrip.truckId) ?? null : null;
+      return {
+        driver: {
+          ...driver,
+          createdAt: driver.createdAt.toISOString(),
+          updatedAt: driver.updatedAt.toISOString(),
+        },
+        currentTrip: currentTrip
+          ? {
+              ...currentTrip,
+              startDate: currentTrip.startDate ? currentTrip.startDate.toISOString() : null,
+              endDate: currentTrip.endDate ? currentTrip.endDate.toISOString() : null,
+              createdAt: currentTrip.createdAt.toISOString(),
+              updatedAt: currentTrip.updatedAt.toISOString(),
+            }
+          : null,
+        truck: truck
+          ? {
+              ...truck,
+              createdAt: truck.createdAt.toISOString(),
+              updatedAt: truck.updatedAt.toISOString(),
+            }
+          : null,
+      };
+    });
+
+    res.json(activity);
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Failed to get driver activity" });
   }
 });
 

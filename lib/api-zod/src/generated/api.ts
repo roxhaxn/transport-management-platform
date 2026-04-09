@@ -590,6 +590,64 @@ export const GetPendingPhotosResponseItem = zod.object({
 export const GetPendingPhotosResponse = zod.array(GetPendingPhotosResponseItem);
 
 /**
+ * @summary Get all drivers with their current active trip
+ */
+export const GetDriverActivityResponseItem = zod.object({
+  driver: zod.object({
+    id: zod.number(),
+    name: zod.string(),
+    phone: zod.string(),
+    licenseNumber: zod.string(),
+    status: zod.string(),
+    createdAt: zod.string(),
+    updatedAt: zod.string(),
+  }),
+  currentTrip: zod.union([
+    zod.object({
+      id: zod.number(),
+      truckId: zod.number(),
+      driverId: zod.number(),
+      clientId: zod.number().nullable(),
+      origin: zod.string(),
+      destination: zod.string(),
+      clientCompany: zod.string(),
+      cargoDescription: zod.string(),
+      status: zod.string(),
+      startDate: zod.string().nullable(),
+      endDate: zod.string().nullable(),
+      notes: zod.string().nullable(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+    zod.null(),
+  ]),
+  truck: zod.union([
+    zod.object({
+      id: zod.number(),
+      registrationNumber: zod.string(),
+      model: zod.string(),
+      capacity: zod.number(),
+      status: zod.string(),
+      driverId: zod.number().nullable(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+    zod.null(),
+  ]),
+});
+export const GetDriverActivityResponse = zod.array(
+  GetDriverActivityResponseItem,
+);
+
+/**
+ * @summary First-time owner setup (only works if no owner exists yet)
+ */
+export const SetupOwnerResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string().optional(),
+});
+
+/**
  * @summary Get current user info and role
  */
 export const GetMeResponse = zod.object({

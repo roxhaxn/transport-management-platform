@@ -27,6 +27,7 @@ import type {
   CreateTruckBody,
   DashboardSummary,
   Driver,
+  DriverActivity,
   ErrorResponse,
   HealthStatus,
   InvoiceData,
@@ -2458,6 +2459,162 @@ export function useGetPendingPhotos<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get all drivers with their current active trip
+ */
+export const getGetDriverActivityUrl = () => {
+  return `/api/dashboard/driver-activity`;
+};
+
+export const getDriverActivity = async (
+  options?: RequestInit,
+): Promise<DriverActivity[]> => {
+  return customFetch<DriverActivity[]>(getGetDriverActivityUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDriverActivityQueryKey = () => {
+  return [`/api/dashboard/driver-activity`] as const;
+};
+
+export const getGetDriverActivityQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDriverActivity>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDriverActivity>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDriverActivityQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDriverActivity>>
+  > = ({ signal }) => getDriverActivity({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDriverActivity>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDriverActivityQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDriverActivity>>
+>;
+export type GetDriverActivityQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all drivers with their current active trip
+ */
+
+export function useGetDriverActivity<
+  TData = Awaited<ReturnType<typeof getDriverActivity>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDriverActivity>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDriverActivityQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary First-time owner setup (only works if no owner exists yet)
+ */
+export const getSetupOwnerUrl = () => {
+  return `/api/auth/setup-owner`;
+};
+
+export const setupOwner = async (
+  options?: RequestInit,
+): Promise<SuccessResponse> => {
+  return customFetch<SuccessResponse>(getSetupOwnerUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getSetupOwnerMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setupOwner>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setupOwner>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["setupOwner"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setupOwner>>,
+    void
+  > = () => {
+    return setupOwner(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetupOwnerMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setupOwner>>
+>;
+
+export type SetupOwnerMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary First-time owner setup (only works if no owner exists yet)
+ */
+export const useSetupOwner = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setupOwner>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setupOwner>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getSetupOwnerMutationOptions(options));
+};
 
 /**
  * @summary Get current user info and role

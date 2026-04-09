@@ -255,6 +255,12 @@ export interface BillsExport {
   rows: string[][];
 }
 
+export interface DriverActivity {
+  driver: Driver;
+  currentTrip: Trip | null;
+  truck: Truck | null;
+}
+
 export interface DashboardSummary {
   totalTrucks: number;
   activeTrucks: number;
