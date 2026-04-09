@@ -29,7 +29,7 @@ export const requireOwner = async (req: Request, res: Response, next: NextFuncti
     return;
   }
   try {
-    const user = await clerkClient().users.getUser(userId);
+    const user = await clerkClient.users.getUser(userId);
     const role = (user.publicMetadata?.role as string) ?? "driver";
     if (role !== "owner") {
       res.status(403).json({ error: "Forbidden: owner access required" });

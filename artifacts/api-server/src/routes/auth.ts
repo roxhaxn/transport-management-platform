@@ -8,13 +8,13 @@ const router = Router();
 router.post("/auth/setup-owner", requireAuth, async (req, res) => {
   const userId = req.userId!;
   try {
-    const { data: users } = await clerkClient().users.getUserList({ limit: 200 });
+    const { data: users } = await clerkClient.users.getUserList({ limit: 200 });
     const hasOwner = users.some((u) => (u.publicMetadata?.role as string) === "owner");
     if (hasOwner) {
       res.status(400).json({ error: "An owner account already exists. Contact your administrator." });
       return;
     }
-    await clerkClient().users.updateUserMetadata(userId, {
+    await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: { role: "owner" },
     });
     res.json({ success: true, message: "You are now the owner" });
@@ -32,7 +32,7 @@ router.get("/auth/me", requireAuth, async (req, res) => {
     return;
   }
   try {
-    const user = await clerkClient().users.getUser(userId);
+    const user = await clerkClient.users.getUser(userId);
     const role = (user.publicMetadata?.role as string) ?? "driver";
     const email = user.emailAddresses?.[0]?.emailAddress ?? null;
     res.json({ userId, role, email });
@@ -50,13 +50,13 @@ router.post("/auth/set-role", requireAuth, async (req, res) => {
     return;
   }
   try {
-    const callerUser = await clerkClient().users.getUser(callerId);
+    const callerUser = await clerkClient.users.getUser(callerId);
     const callerRole = (callerUser.publicMetadata?.role as string) ?? "driver";
     if (callerRole !== "owner") {
       res.status(403).json({ error: "Only owners can assign roles" });
       return;
     }
-    await clerkClient().users.updateUserMetadata(parsed.data.targetUserId, {
+    await clerkClient.users.updateUserMetadata(parsed.data.targetUserId, {
       publicMetadata: { role: parsed.data.role },
     });
     res.json({ success: true, message: "Role updated" });
