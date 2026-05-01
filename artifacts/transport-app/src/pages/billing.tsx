@@ -175,7 +175,7 @@ export default function Billing() {
 
   const handleDownloadInvoice = async (billId: number) => {
     try {
-      const response = await fetch(`/api/billing/${billId}/invoice`);
+      const response = await fetch(`/api/billing/${billId}/invoice-data`);
       if (!response.ok) throw new Error('Failed to fetch invoice data');
       const invoiceData = await response.json();
       generateInvoicePdf(invoiceData);
