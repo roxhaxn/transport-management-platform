@@ -1,12 +1,11 @@
-import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { AuthProvider, useAuth } from "@/context/auth-context";
 
-import Home from "@/pages/home";
+import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Trucks from "@/pages/trucks";
 import Drivers from "@/pages/drivers";
@@ -14,125 +13,81 @@ import Trips from "@/pages/trips";
 import TripDetail from "@/pages/trip-detail";
 import Billing from "@/pages/billing";
 import Clients from "@/pages/clients";
-import Setup from "@/pages/setup";
 import DriverPortal from "@/pages/driver-portal";
-import Verify from "@/pages/verify";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function stripBase(path: string): string {
-  return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || "/" : path;
+function OwnerRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Redirect to="/login" />;
+  if (user.role !== "owner") return <Redirect to="/driver-portal" />;
+  return <>{children}</>;
 }
 
-if (!clerkPubKey) throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY');
-
-function ClerkQueryClientCacheInvalidator() {
-  const { addListener } = useClerk();
-  const queryClient = useQueryClient();
-  const prevUserIdRef = useRef<string | null | undefined>(undefined);
-  useEffect(() => {
-    const unsubscribe = addListener(({ user }) => {
-      const userId = user?.id ?? null;
-      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) {
-        queryClient.clear();
-      }
-      prevUserIdRef.current = userId;
-    });
-    return unsubscribe;
-  }, [addListener, queryClient]);
-  return null;
-}
-
-function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Redirect to="/dashboard" />
-      </Show>
-      <Show when="signed-out">
-        <Home />
-      </Show>
-    </>
-  );
+function DriverRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (!user) return <Redirect to="/login" />;
+  return <>{children}</>;
 }
 
 function Router() {
+  const { user } = useAuth();
+
   return (
     <Switch>
-      <Route path="/" component={HomeRedirect} />
-      
-      <Route path="/sign-in/*?">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
-        </div>
-      </Route>
-      <Route path="/sign-up/*?">
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
-        </div>
+      <Route path="/">
+        {user ? <Redirect to={user.role === "owner" ? "/dashboard" : "/driver-portal"} /> : <Redirect to="/login" />}
       </Route>
 
-      <Route path="/setup">
-        <Show when="signed-in" fallback={<Redirect to="/sign-in" />}>
-          <Setup />
-        </Show>
+      <Route path="/login">
+        {user ? <Redirect to={user.role === "owner" ? "/dashboard" : "/driver-portal"} /> : <Login />}
+      </Route>
+
+      <Route path="/dashboard">
+        <OwnerRoute><Layout><Dashboard /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/trucks">
+        <OwnerRoute><Layout><Trucks /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/drivers">
+        <OwnerRoute><Layout><Drivers /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/clients">
+        <OwnerRoute><Layout><Clients /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/trips">
+        <OwnerRoute><Layout><Trips /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/trips/:id">
+        <OwnerRoute><Layout><TripDetail /></Layout></OwnerRoute>
+      </Route>
+      <Route path="/billing">
+        <OwnerRoute><Layout><Billing /></Layout></OwnerRoute>
       </Route>
 
       <Route path="/driver-portal">
-        <Show when="signed-in" fallback={<Redirect to="/sign-in" />}>
-          <DriverPortal />
-        </Show>
+        <DriverRoute><DriverPortal /></DriverRoute>
       </Route>
-      
-      <Route path="/verify/:photoId">
-        <Show when="signed-in" fallback={<Redirect to="/sign-in" />}>
-          <Verify />
-        </Show>
-      </Route>
-      
-      {/* Owner routes */}
-      <Route path="/dashboard" component={() => <Layout><Dashboard /></Layout>} />
-      <Route path="/trucks" component={() => <Layout><Trucks /></Layout>} />
-      <Route path="/drivers" component={() => <Layout><Drivers /></Layout>} />
-      <Route path="/trips" component={() => <Layout><Trips /></Layout>} />
-      <Route path="/trips/:id" component={() => <Layout><TripDetail /></Layout>} />
-      <Route path="/billing" component={() => <Layout><Billing /></Layout>} />
-      <Route path="/clients" component={() => <Layout><Clients /></Layout>} />
-      
+
       <Route component={NotFound} />
     </Switch>
-  );
-}
-
-function ClerkProviderWithRoutes() {
-  const [, setLocation] = useLocation();
-  return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-    >
-      <QueryClientProvider client={queryClient}>
-        <ClerkQueryClientCacheInvalidator />
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
   );
 }
 
 function App() {
   return (
     <WouterRouter base={basePath}>
-      <ClerkProviderWithRoutes />
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Router />
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </WouterRouter>
   );
 }
